@@ -1,0 +1,23 @@
+import wollok.game.*
+import cosillas.*
+import homero.*
+import niveles.*
+
+
+
+
+program EatAndRun {
+
+
+//	CONFIG	
+	
+	
+	game.title("EAT & RUN")
+	game.height(15)
+	game.width(15)
+	nivel3.iniciar()
+	
+	game.start()
+
+
+}

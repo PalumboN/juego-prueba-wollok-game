@@ -1,0 +1,132 @@
+import homero.*
+import cosillas.*
+import niveles.*
+import wollok.game.*
+
+
+describe "Test Movimiento" {
+	
+	test "homero no puede pasar el limite establecido" {
+		homero.position(game.at(1,1))
+		homero.moverse(game.at(-1,0))
+		assert.equals(homero.position(), game.at(1,1))
+	}
+	
+}
+
+
+
+describe "Test Nivel 1"{
+	
+const barraUranio = new Barra (horasDeTrabajo = 1,image = "barraVerdeUranio.png",position = movimiento.posicionAleatoria(1,5))
+const dona = new Dona (horasDeTrabajo = -2,position = movimiento.posicionAleatoria(2,5), image="donut.png")		
+const barraRoja = new Barra(horasDeTrabajo = 2,image = "barraRojaUranio.png",position = movimiento.posicionAleatoria(1,4))
+
+fixture{
+	game.clear()
+	nivel1.iniciar()
+}
+
+test "homero come 2 rosquillas y come demasiado"{
+
+	dona.sumarEfectos(homero)
+	dona.sumarEfectos(homero)
+	assert.that(homero.comioDemasiado())
+}
+
+test "homero agarra 4 barras rojas y 2 verdes sobrepasa a las horas trabajadas deseadas" {
+	barraRoja.sumarEfectos(homero)
+	barraRoja.sumarEfectos(homero)
+	barraRoja.sumarEfectos(homero)
+	barraRoja.sumarEfectos(homero)
+	barraUranio.sumarEfectos(homero)
+	barraUranio.sumarEfectos(homero)
+	assert.that(8 <= homero.horasAcumuladas())
+	}
+	
+test "homero agarra 2 barras rojas y 2 barras verdes y no sobrepasa a las horas trabajadas deseadas" {
+	barraRoja.sumarEfectos(homero)
+	barraRoja.sumarEfectos(homero)
+	barraUranio.sumarEfectos(homero)
+	barraUranio.sumarEfectos(homero)
+	assert.notThat(8 <= homero.horasAcumuladas())
+	}
+
+}
+
+
+describe "Test nivel 2" {
+	
+	
+	const dineroPequenio = new ElementosSegundoNivel (image = "dineroPequenio.png",position = movimiento.posicionAleatoria(1,5) , valorMonetario = 1, valorAlcoholico = 0)
+
+	const dineroGrande = new ElementosSegundoNivel(image = "dineroGrande.png",position = movimiento.posicionAleatoria(4,5), valorMonetario = 2, valorAlcoholico = 0)
+ 
+	const cerveza = new ElementosSegundoNivel(image = "cerveza.jpeg", position = movimiento.posicionAleatoria(2,3) , valorMonetario = -3, valorAlcoholico =  1, esDinero = false)
+	
+	const dineroInicial = homero.dinero()
+	
+		fixture {
+		game.clear()
+		nivel2.iniciar()
+	}
+	
+	test "homero toma dos cervezas y se queda sin dinero" {
+		cerveza.sumarEfectos(homero)
+		cerveza.sumarEfectos(homero)
+		assert.that(homero.seQuedoSinPlata())
+	}
+	
+	test "homero aumenta su dinero 1 unidad" {
+		dineroPequenio.sumarEfectos(homero)
+		assert.that(homero.dinero() == (dineroInicial + 1))
+	}
+	
+	test "homero agarra dineroGrande, dineroPequenio, toma cerveza y se queda con dinero Inicial" {
+		dineroPequenio.sumarEfectos(homero)
+		dineroGrande.sumarEfectos(homero)
+		cerveza.sumarEfectos(homero)
+		assert.equals(homero.dinero(),dineroInicial)
+	}
+
+}
+
+describe "Test nivel 3" {
+	
+	
+	const auto = new Auto (image = "primerAuto.png" ,position = game.at(10,2),esBarraDeUranio = false)
+	const barra = new BarraTercerNivel(image = "barraRojaUranio.png",position = game.at(1,11),esBarraDeUranio = true)
+	const gameOver = new Elementos (image = "gameOver.jpeg",position = game.origin())
+	
+	fixture {
+		game.clear()
+		nivel3.iniciar()
+	}
+	
+	
+	test "autoHomero agarra dos barras y pierde" {
+		barra.sumarEfectos(autoHomero)
+		barra.sumarEfectos(autoHomero)
+		assert.equals(game.origin(),gameOver.position())
+	}
+	
+	test "autoHomero agarra una barra y se pone radioactivo" {
+		barra.sumarEfectos(autoHomero)
+		assert.that(autoHomero.radioactivo())
+	}
+	
+	test "autoHomero choca con auto y pierde vida" {
+		auto.sumarEfectos(autoHomero)
+		assert.equals(2,autoHomero.vidas())
+	}
+	
+	test "autoHomero choca con auto, pierde vida, agarra una barra y se pone radioactivo" {
+		auto.sumarEfectos(autoHomero)
+		barra.sumarEfectos(autoHomero)
+		assert.that(autoHomero.radioactivo())
+		assert.equals(2,autoHomero.vidas())
+	}
+
+}
+
+
